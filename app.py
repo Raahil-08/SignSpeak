@@ -15,6 +15,7 @@ with mp_hands.Hands(
     
     while cap.isOpened():
         success, image = cap.read()
+        
         if not success:
             continue
 
