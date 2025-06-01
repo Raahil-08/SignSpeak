@@ -4,7 +4,7 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useTheme } from '@/hooks/useThemeContext';
 import ThemedText from './ThemedText';
 import Button from './Button';
-import { Camera, SwitchCamera, Mic, MicOff, Circle } from 'lucide-react-native';
+import { Camera, SwitchCamera, Megaphone, MegaphoneOff, Circle } from 'lucide-react-native';
 import Layout from '@/constants/Layout';
 import Animated, { 
   useSharedValue, 
@@ -106,11 +106,11 @@ export default function CameraWithOverlay({
         facing={facing}
       >
         <View style={styles.overlay}>
-          <View style={styles.header}>
+          <View style={[styles.header, { justifyContent: 'center' }]}>
             <ThemedText 
               variant="h3" 
-              weight="semibold" 
-              style={[styles.title, { color: '#f4f3ee' }]}
+              weight="bold" 
+              style={[styles.title, { color: '#f4f3ee', textAlign: 'center', width: '100%' }]}
             >
               Sign Language Translator
             </ThemedText>
@@ -130,8 +130,8 @@ export default function CameraWithOverlay({
               onPress={toggleAudio}
             >
               {audioEnabled ? 
-                <Mic size={24} color="#463f3a" /> : 
-                <MicOff size={24} color="#463f3a" />
+                <Megaphone size={24} color="#463f3a" /> : 
+                <MegaphoneOff size={24} color="#463f3a" />
               }
             </Pressable>
             
