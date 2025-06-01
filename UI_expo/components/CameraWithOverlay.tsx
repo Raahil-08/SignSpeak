@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Platform, Pressable } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Platform, Pressable, Alert } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useTheme } from '@/hooks/useThemeContext';
 import ThemedText from './ThemedText';
 import Button from './Button';
-import { Camera, SwitchCamera, Mic, MicOff, Circle } from 'lucide-react-native';
+import { Camera, SwitchCamera, Megaphone, MegaphoneOff, Circle } from 'lucide-react-native';
 import Layout from '@/constants/Layout';
 import Animated, { 
   useSharedValue, 
@@ -15,6 +15,7 @@ import Animated, {
   Easing,
   cancelAnimation 
 } from 'react-native-reanimated';
+import { startRecording, stopRecording, processFrame } from '@/services/gestureService';
 
 interface CameraWithOverlayProps {
   onTextRecognized: (text: string) => void;
@@ -22,6 +23,9 @@ interface CameraWithOverlayProps {
   isRecording: boolean;
   onRecordingChange: (recording: boolean) => void;
 }
+
+// Frame capture interval in milliseconds
+const FRAME_CAPTURE_INTERVAL = 500; // 2 frames per second
 
 export default function CameraWithOverlay({ 
   onTextRecognized, 
@@ -32,11 +36,20 @@ export default function CameraWithOverlay({
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front');
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
+  const [captureError, setCaptureError] = useState<string | null>(null);
+  
+  // Reference to the camera
+  const cameraRef = useRef<any>(null);
+  
+  // Timer for capturing frames
+  const frameTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const recordingPulse = useSharedValue(1);
 
-  React.useEffect(() => {
+  // Handle recording state changes
+  useEffect(() => {
     if (isRecording) {
+      // Start the pulse animation
       recordingPulse.value = withRepeat(
         withSequence(
           withTiming(1.2, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
@@ -45,16 +58,95 @@ export default function CameraWithOverlay({
         -1,
         true
       );
+      
+      // Start a new recording session
+      startNewRecordingSession();
     } else {
+      // Stop the pulse animation
       cancelAnimation(recordingPulse);
       recordingPulse.value = withTiming(1);
+      
+      // Stop the current recording session
+      stopCurrentRecordingSession();
     }
+    
+    // Cleanup function
+    return () => {
+      if (frameTimerRef.current) {
+        clearInterval(frameTimerRef.current);
+        frameTimerRef.current = null;
+      }
+    };
   }, [isRecording]);
 
   const animatedRecordingStyle = useAnimatedStyle(() => ({
     transform: [{ scale: recordingPulse.value }],
     opacity: withTiming(isRecording ? 1 : 0, { duration: 300 }),
   }));
+
+  // Start a new recording session
+  const startNewRecordingSession = async () => {
+    try {
+      // Start the recording on the server
+      await startRecording({
+        deviceType: Platform.OS,
+        cameraFacing: facing,
+        timestamp: new Date().toISOString(),
+      });
+      
+      // Start capturing frames at regular intervals
+      frameTimerRef.current = setInterval(captureFrame, FRAME_CAPTURE_INTERVAL);
+      
+      // Notify the user that recording has started
+      onTextRecognized("Recording started. Sign language will be processed later.");
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      setCaptureError('Failed to start recording');
+      onRecordingChange(false); // Revert the recording state
+    }
+  };
+  
+  // Stop the current recording session
+  const stopCurrentRecordingSession = async () => {
+    // Clear the frame capture timer
+    if (frameTimerRef.current) {
+      clearInterval(frameTimerRef.current);
+      frameTimerRef.current = null;
+    }
+    
+    try {
+      // Stop the recording on the server
+      const result = await stopRecording();
+      console.log('Recording stopped:', result);
+      
+      // Notify the user that recording has stopped
+      onTextRecognized(`Recording stopped. ${result.frame_count} frames captured.`);
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      // Even if stopping fails, we still want to clear the local recording state
+    }
+  };
+  
+  // Capture a frame and send it to the server
+  const captureFrame = async () => {
+    if (!cameraRef.current || !isRecording) return;
+    
+    try {
+      // Take a picture
+      const photo = await cameraRef.current.takePictureAsync({ 
+        quality: 0.5, // Lower quality to reduce data size
+        base64: true,
+        exif: false,
+        skipProcessing: true
+      });
+      
+      // Send the frame to the server
+      await processFrame(photo.base64);
+    } catch (error) {
+      console.error('Error capturing frame:', error);
+      setCaptureError('Error capturing frames');
+    }
+  };
 
   if (!permission) {
     return (
@@ -93,10 +185,12 @@ export default function CameraWithOverlay({
   };
 
   const toggleRecording = () => {
-    onRecordingChange(!isRecording);
-    if (!isRecording) {
-      onTextRecognized("Hello! This is a sample translation.");
+    // If there's a capture error, clear it when starting a new recording
+    if (captureError && !isRecording) {
+      setCaptureError(null);
     }
+    
+    onRecordingChange(!isRecording);
   };
 
   return (
@@ -104,13 +198,13 @@ export default function CameraWithOverlay({
       <CameraView 
         style={styles.camera} 
         facing={facing}
+        ref={cameraRef}
       >
         <View style={styles.overlay}>
-          <View style={styles.header}>
+          <View style={[styles.header, { justifyContent: 'center' }]}>
             <ThemedText 
               variant="h3" 
-              weight="semibold" 
-              style={[styles.title, { color: '#f4f3ee' }]}
+              style={[styles.title, { color: '#f4f3ee', textAlign: 'center', width: '100%' }]}
             >
               Sign Language Translator
             </ThemedText>
@@ -122,6 +216,14 @@ export default function CameraWithOverlay({
                 </ThemedText>
               </View>
             )}
+            
+            {captureError && (
+              <View style={[styles.errorIndicator, { backgroundColor: '#e76f51' }]}>
+                <ThemedText style={[styles.errorText, { color: '#fff' }]}>
+                  {captureError}
+                </ThemedText>
+              </View>
+            )}
           </View>
 
           <View style={styles.controls}>
@@ -130,8 +232,8 @@ export default function CameraWithOverlay({
               onPress={toggleAudio}
             >
               {audioEnabled ? 
-                <Mic size={24} color="#463f3a" /> : 
-                <MicOff size={24} color="#463f3a" />
+                <Megaphone size={24} color="#463f3a" /> : 
+                <MegaphoneOff size={24} color="#463f3a" />
               }
             </Pressable>
             
@@ -196,6 +298,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.md,
     paddingVertical: Layout.spacing.sm,
     borderRadius: Layout.borderRadius.full,
+    position: 'absolute',
+    top: Layout.spacing.lg,
+    right: Layout.spacing.lg,
   },
   recordingDot: {
     width: 8,
@@ -205,6 +310,20 @@ const styles = StyleSheet.create({
     marginRight: Layout.spacing.sm,
   },
   recordingText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  errorIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.spacing.sm,
+    borderRadius: Layout.borderRadius.full,
+    position: 'absolute',
+    bottom: -Layout.spacing.xl,
+    alignSelf: 'center',
+  },
+  errorText: {
     fontSize: 14,
     fontWeight: '500',
   },
