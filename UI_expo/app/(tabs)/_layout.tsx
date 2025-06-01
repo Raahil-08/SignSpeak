@@ -71,17 +71,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="learn"
-        options={{
-          title: 'Learn',
-          headerShown: true,
-          headerTitle: 'Learn Sign Language',
-          tabBarIcon: ({ color, size }) => (
-            <Info size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
