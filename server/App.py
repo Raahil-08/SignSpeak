@@ -6,6 +6,8 @@ import numpy as np
 import cv2
 import time
 import json
+from blur_detection import is_blurry
+from blur_detection import process_recordings
 
 app = Flask(__name__)
 CORS(app)
@@ -151,3 +153,62 @@ def list_recordings():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
+    
+
+@app.route('/process-frame', methods=['POST'])
+def process_frame():
+    """Process and save a frame from the frontend"""
+    if 'frame' not in request.json:
+        return jsonify({'error': 'No frame data provided'}), 400
+    
+    session_id = request.json.get('session_id')
+    frame_data = request.json['frame']
+    
+    if not session_id or session_id not in active_recordings:
+        session_id = str(int(time.time()))
+        session_dir = os.path.join(RECORDINGS_DIR, session_id)
+        os.makedirs(session_dir, exist_ok=True)
+        
+        active_recordings[session_id] = {
+            'frame_count': 0,
+            'directory': session_dir,
+            'start_time': time.time(),
+            'metadata': request.json.get('metadata', {})
+        }
+    
+    session = active_recordings[session_id]
+    frame_count = session['frame_count']
+    
+    try:
+        # Decode base64 image
+        img_bytes = base64.b64decode(frame_data.split(',')[1])
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        # Check for blurriness
+        is_blur = is_blurry(frame, threshold=100.0)
+        if is_blur:
+            blurry_dir = os.path.join(session['directory'], 'blurry')
+            os.makedirs(blurry_dir, exist_ok=True)
+            blurry_filename = os.path.join(blurry_dir, f'frame_{frame_count:06d}.jpg')
+            cv2.imwrite(blurry_filename, frame)
+            print(f"Saved blurry frame: {blurry_filename}")
+        else:
+            frame_filename = os.path.join(session['directory'], f'frame_{frame_count:06d}.jpg')
+            cv2.imwrite(frame_filename, frame)
+            print(f"Saved sharp frame: {frame_filename}")
+        
+        session['frame_count'] += 1
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'frame_number': frame_count,
+            'blurry': is_blur,
+            'message': 'Frame processed successfully'
+        })
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'message': 'Failed to process frame'
+        }), 500

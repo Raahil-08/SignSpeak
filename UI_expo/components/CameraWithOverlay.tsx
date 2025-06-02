@@ -38,6 +38,10 @@ export default function CameraWithOverlay({
   const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
   const [captureError, setCaptureError] = useState<string | null>(null);
   
+  // Timer state
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Reference to the camera
   const cameraRef = useRef<any>(null);
   
@@ -61,6 +65,12 @@ export default function CameraWithOverlay({
       
       // Start a new recording session
       startNewRecordingSession();
+      
+      // Start the timer
+      setElapsedTime(0);
+      timerIntervalRef.current = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
     } else {
       // Stop the pulse animation
       cancelAnimation(recordingPulse);
@@ -68,6 +78,12 @@ export default function CameraWithOverlay({
       
       // Stop the current recording session
       stopCurrentRecordingSession();
+      
+      // Stop the timer
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
     }
     
     // Cleanup function
@@ -76,6 +92,11 @@ export default function CameraWithOverlay({
         clearInterval(frameTimerRef.current);
         frameTimerRef.current = null;
       }
+      
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
     };
   }, [isRecording]);
 
@@ -83,6 +104,13 @@ export default function CameraWithOverlay({
     transform: [{ scale: recordingPulse.value }],
     opacity: withTiming(isRecording ? 1 : 0, { duration: 300 }),
   }));
+  
+  // Format seconds into MM:SS format
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   // Start a new recording session
   const startNewRecordingSession = async () => {
@@ -217,6 +245,13 @@ export default function CameraWithOverlay({
               </View>
             )}
             
+            {/* Timer display */}
+            <View style={[styles.timerContainer, { opacity: isRecording ? 1 : 0 }]}>
+              <ThemedText style={[styles.timerText, { color: '#f4f3ee' }]}>
+                {formatTime(elapsedTime)}
+              </ThemedText>
+            </View>
+            
             {captureError && (
               <View style={[styles.errorIndicator, { backgroundColor: '#e76f51' }]}>
                 <ThemedText style={[styles.errorText, { color: '#fff' }]}>
@@ -299,7 +334,7 @@ const styles = StyleSheet.create({
     paddingVertical: Layout.spacing.sm,
     borderRadius: Layout.borderRadius.full,
     position: 'absolute',
-    top: Layout.spacing.lg,
+    top: 10 * 5,
     right: Layout.spacing.lg,
   },
   recordingDot: {
@@ -310,6 +345,20 @@ const styles = StyleSheet.create({
     marginRight: Layout.spacing.sm,
   },
   recordingText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  // Timer styles
+  timerContainer: {
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.spacing.sm,
+    borderRadius: Layout.borderRadius.full,
+    backgroundColor: '#463f3a',
+    position: 'absolute',
+    top: 10 * 5,
+    left: Layout.spacing.lg,
+  },
+  timerText: {
     fontSize: 14,
     fontWeight: '500',
   },
