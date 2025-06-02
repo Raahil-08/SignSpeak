@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     paddingVertical: Layout.spacing.sm,
     borderRadius: Layout.borderRadius.full,
     position: 'absolute',
-    top: Layout.spacing.lg,
+    top: 10 * 5,
     right: Layout.spacing.lg,
   },
   recordingDot: {
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     borderRadius: Layout.borderRadius.full,
     backgroundColor: '#463f3a',
     position: 'absolute',
-    top: Layout.spacing.lg,
+    top: 10 * 5,
     left: Layout.spacing.lg,
   },
   timerText: {
