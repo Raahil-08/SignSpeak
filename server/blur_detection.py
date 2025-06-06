@@ -2,13 +2,6 @@ import cv2
 import os
 import shutil
 
-def is_blurry(image_path, threshold=100.0):
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if image is None:
-        return True  # Treat unreadable images as blurry
-    variance = cv2.Laplacian(image, cv2.CV_64F).var()
-    return variance < threshold
-
 def process_recordings(recordings_folder, blurry_folder, threshold=100.0):
     os.makedirs(blurry_folder, exist_ok=True)
     for filename in os.listdir(recordings_folder):
