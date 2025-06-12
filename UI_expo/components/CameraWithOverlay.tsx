@@ -170,7 +170,8 @@ export default function CameraWithOverlay({
       
       // Send the frame to the server
       await processFrame(photo.base64);
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error capturing frame:', error);
       setCaptureError('Error capturing frames');
     }
