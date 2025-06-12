@@ -1,5 +1,5 @@
 import * as FileSystem from 'expo-file-system';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 
 // Use different URLs for iOS simulator and Android emulator
 const SERVER_URL = Platform.select({
@@ -7,6 +7,9 @@ const SERVER_URL = Platform.select({
   android: 'http://10.0.2.2:5001', // Special IP for Android emulator to access host machine
   default: 'http://localhost:5001'
 });
+
+// For debugging - log the server URL
+console.log('Using server URL:', SERVER_URL);
 
 // Interface for recording session
 interface RecordingSession {
@@ -26,6 +29,33 @@ let currentSession: RecordingSession | null = null;
  */
 export async function startRecording(metadata: Record<string, any> = {}): Promise<RecordingSession> {
   try {
+    console.log('Starting recording with metadata:', metadata);
+    console.log('Connecting to server at:', SERVER_URL);
+    
+    // Check if we can reach the server
+    try {
+      const testResponse = await fetch(`${SERVER_URL}/recordings`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!testResponse.ok) {
+        throw new Error(`Server test failed with status: ${testResponse.status}`);
+      }
+      
+      console.log('Server connection test successful');
+    } catch (testError) {
+      console.error('Server connection test failed:', testError);
+      Alert.alert(
+        'Server Connection Error',
+        `Could not connect to the server at ${SERVER_URL}. Please check that the server is running and accessible.`,
+        [{ text: 'OK' }]
+      );
+      throw new Error(`Server connection failed: ${testError.message}`);
+    }
+    
     const response = await fetch(`${SERVER_URL}/start-recording`, {
       method: 'POST',
       headers: {
@@ -35,10 +65,14 @@ export async function startRecording(metadata: Record<string, any> = {}): Promis
     });
 
     if (!response.ok) {
-      throw new Error('Failed to start recording session');
+      const errorText = await response.text();
+      console.error('Server response error:', errorText);
+      throw new Error(`Failed to start recording session: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Recording started successfully:', data);
+    
     currentSession = {
       sessionId: data.session_id,
       frameCount: 0,
@@ -49,6 +83,11 @@ export async function startRecording(metadata: Record<string, any> = {}): Promis
     return currentSession;
   } catch (error) {
     console.error('Error starting recording:', error);
+    Alert.alert(
+      'Recording Error',
+      `Failed to start recording: ${error.message}`,
+      [{ text: 'OK' }]
+    );
     throw error;
   }
 }
@@ -75,7 +114,9 @@ export async function processFrame(frame: string): Promise<any> {
     });
 
     if (!response.ok) {
-      throw new Error('Server response was not ok');
+      const errorText = await response.text();
+      console.error('Server response error:', errorText);
+      throw new Error(`Server response was not ok: ${response.status} ${errorText}`);
     }
 
     const result = await response.json();
@@ -113,10 +154,13 @@ export async function stopRecording(): Promise<any> {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to stop recording session');
+      const errorText = await response.text();
+      console.error('Server response error:', errorText);
+      throw new Error(`Failed to stop recording session: ${response.status} ${errorText}`);
     }
 
     const result = await response.json();
+    console.log('Recording stopped successfully:', result);
     
     // Clear the current session
     const completedSession = { ...currentSession, isActive: false };
@@ -128,6 +172,11 @@ export async function stopRecording(): Promise<any> {
     };
   } catch (error) {
     console.error('Error stopping recording:', error);
+    Alert.alert(
+      'Recording Error',
+      `Failed to stop recording: ${error.message}`,
+      [{ text: 'OK' }]
+    );
     throw error;
   }
 }
@@ -154,7 +203,9 @@ export async function listRecordings(): Promise<any> {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch recordings');
+      const errorText = await response.text();
+      console.error('Server response error:', errorText);
+      throw new Error(`Failed to fetch recordings: ${response.status} ${errorText}`);
     }
 
     return await response.json();
