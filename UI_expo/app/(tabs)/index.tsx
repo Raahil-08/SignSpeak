@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, StyleSheet, SafeAreaView, Platform, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/hooks/useThemeContext';
@@ -16,15 +16,44 @@ export default function TranslateScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
-  const handleTextRecognized = (text: string) => {
-    setIsProcessing(true);
-    
-    setTimeout(() => {
-      setCurrentTranslation(text);
-      addTranslation(text);
-      setIsProcessing(false);
-    }, 1500);
-  };
+  /* --- debouncer config --- */
+const STABILITY_FRAMES = 5;   // frames to lock a letter
+const GAP_FRAMES       = 12;  // silent frames → space
+const stableRef = useRef({ last: '', count: 0, gap: 0 });
+const [word, setWord] = useState('');
+
+const handleTextRecognized = (letter: string | null) => {
+  const s = stableRef.current;
+
+  // update counters
+  if (letter) {
+    if (letter === s.last) {
+      s.count += 1;
+    } else {
+      s.last  = letter;
+      s.count = 1;
+    }
+  } else {
+    s.count = 0;
+  }
+
+  // stable → accept
+  if (letter && s.count === STABILITY_FRAMES) {
+    setWord(w => w + letter);
+    setCurrentTranslation(t => t + letter);
+    addTranslation(letter);    // optional history
+    s.gap = 0;
+    return;
+  }
+
+  // silence → maybe space
+  s.gap += 1;
+  if (s.gap === GAP_FRAMES && word) {
+    setWord('');
+    setCurrentTranslation(t => t + ' ');
+  }
+};
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#463f3a' }]}>

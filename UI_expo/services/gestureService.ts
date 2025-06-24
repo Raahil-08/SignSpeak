@@ -139,9 +139,9 @@ export async function processFrame(frame: string): Promise<any> {
  */
 export async function stopRecording(): Promise<any> {
   if (!currentSession) {
-    throw new Error('No active recording session');
+    console.warn('stopRecording called but no active session – ignoring');
+    return;
   }
-
   try {
     const response = await fetch(`${SERVER_URL}/stop-recording`, {
       method: 'POST',
