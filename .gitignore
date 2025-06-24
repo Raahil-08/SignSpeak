@@ -1,11 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 venv/
-venv
-data
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Mobile
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# macOS
+.DS_Store
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Model files
+*.pth
+*.h5
+*.keras
+*.pkl
+!models/.gitkeep
+
+# Media
+*.mp4
+*.mov
+*.avi
+
+# Temporary files
+*.swp
+*.swo
+*~
 data/
-keypoints_data
-keypoints_data/
-__pycache__
-data.zip.DS_Store
-.DS_Store
-.DS_Store
-.DS_Store
+# Docker
+.docker/

@@ -1,6 +1,18 @@
 # ASL (American Sign Language) Recognition Project
 
-A comprehensive solution for real-time American Sign Language recognition using computer vision and deep learning.
+A production-ready solution for real-time American Sign Language recognition using computer vision and deep learning.
+
+## Features
+
+- Real-time ASL recognition using computer vision
+- Multiple recognition approaches:
+  - CNN-based classification
+  - Keypoint-based detection
+  - YOLO object detection
+- Cross-platform mobile application
+- Production-ready RESTful API server
+- Containerized deployment support
+- Comprehensive CI/CD pipeline
 
 ## Project Structure
 
@@ -13,60 +25,96 @@ A comprehensive solution for real-time American Sign Language recognition using 
 ├── docs/                   # Project documentation
 ├── models/                 # Trained model weights
 ├── server/                 # Backend server implementation
+├── deploy/                 # Deployment configurations
 └── requirements.txt        # Python dependencies
 ```
 
-## Features
+## Quick Start
 
-- Real-time ASL recognition using computer vision
-- Multiple recognition approaches:
-  - CNN-based classification
-  - Keypoint-based detection
-  - YOLO object detection
-- Cross-platform mobile application
-- RESTful API server
+### Development Setup
 
-## Setup
-
-1. Install Python dependencies:
+1. Clone the repository:
 ```bash
+git clone https://github.com/your-username/asl-recognition.git
+cd asl-recognition
+```
+
+2. Set up environment:
+```bash
+cp .env.example .env  # Configure your environment variables
+make install-dev      # Install Python dependencies
+make install-ui       # Install UI dependencies
+```
+
+3. Start development servers:
+```bash
+make run-server  # Start backend server
+make run-ui      # Start mobile app development server
+```
+
+### Production Deployment
+
+1. Using Docker Compose:
+```bash
+docker-compose up -d
+```
+
+2. Manual Deployment:
+```bash
+# Build the application
+make clean
 pip install -r requirements.txt
+pip install -e .
+
+# Start the server
+gunicorn -w 4 -b 0.0.0.0:5000 server.App:app
 ```
 
-2. Set up the mobile application:
+## Configuration
+
+- Environment variables: Copy `.env.example` to `.env` and configure
+- Nginx: Configure `deploy/nginx.conf` for your domain
+- Docker: Adjust `Dockerfile` and `docker-compose.yml` as needed
+
+## Testing
+
 ```bash
-cd UI_expo
-npm install
+make test       # Run all tests
+make lint       # Run code quality checks
+make test-live  # Run live recognition tests
 ```
 
-3. Start the development server:
-```bash
-python app.py
-```
+## Security
 
-4. Launch the mobile app:
-```bash
-cd UI_expo
-npm start
-```
+- See `SECURITY.md` for vulnerability reporting
+- All API endpoints are HTTPS-only in production
+- Input validation and sanitization implemented
+- Rate limiting enabled
 
-## Models
+## Performance Optimization
 
-- `asl_cnn.pth`: CNN-based ASL recognition model
-- `asl_gnn.pth`: Graph Neural Network for hand pose estimation
+- Docker containers optimized for production
+- Nginx configured for static file serving
+- Model inference optimized for CPU/GPU
+- Caching implemented where appropriate
 
-## Documentation
+## Monitoring & Logging
 
-Detailed documentation is available in the `docs/` directory.
-
-## License
-
-MIT License
+- Health check endpoints available
+- Structured logging implemented
+- Docker health checks configured
+- Performance metrics tracking
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+See `CONTRIBUTING.md` for guidelines.
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Support
+
+- Create an issue for bug reports
+- Use discussions for general questions
+- See documentation in `docs/` for guides
