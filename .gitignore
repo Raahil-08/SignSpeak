@@ -60,16 +60,10 @@ web-build/
 htmlcov/
 .pytest_cache/
 
-# Model files
-*.pth
-*.h5
-*.keras
-*.pkl
-!models/.gitkeep
+
 
 # Media
-*.mp4
-*.mov
+
 *.avi
 
 # Temporary files
@@ -77,5 +71,3 @@ htmlcov/
 *.swo
 *~
 data/
-# Docker
-.docker/
