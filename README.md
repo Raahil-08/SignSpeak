@@ -1,120 +1,155 @@
-# ASL (American Sign Language) Recognition Project
+# 🧠 SignSpeak: Real-Time ASL Recognition System
 
-A production-ready solution for real-time American Sign Language recognition using computer vision and deep learning.
+> A production-ready American Sign Language recognition platform powered by computer vision and deep learning. Built for real-world mobile use. ✨
 
-## Features
+![Banner](./SignSpeak.png)
 
-- Real-time ASL recognition using computer vision
-- Multiple recognition approaches:
-  - CNN-based classification
-  - Keypoint-based detection
-  - YOLO object detection
-- Cross-platform mobile application
-- Production-ready RESTful API server
-- Containerized deployment support
-- Comprehensive CI/CD pipeline
+---
 
-## Project Structure
+## 🚀 What It Does
+
+SignSpeak is a cross-platform solution that:
+
+* 🕐️ Recognizes ASL signs **in real-time**
+* 📱 Runs on your **mobile phone** (React Native + Expo)
+* 🧠 Leverages deep learning models on the backend (Flask)
+* 🗪 Supports multiple recognition strategies:
+
+  * Keypoint detection (MediaPipe)
+  * CNN-based classification
+  * Object detection (YOLOv5)
+
+> 🎥 [Watch Model Demo Video](./Model_proof.mp4)
+
+---
+
+## 🗂 Project Structure
 
 ```
-├── Scripts/                 # Core ML/AI implementation
-│   ├── Keypoints/          # Keypoint-based recognition
-│   ├── YOLO/               # YOLO-based object detection
-│   └── train/              # Training scripts and utilities
-├── UI_expo/                # Mobile application (Expo/React Native)
-├── docs/                   # Project documentation
-├── models/                 # Trained model weights
-├── server/                 # Backend server implementation
-├── deploy/                 # Deployment configurations
-└── requirements.txt        # Python dependencies
+📆 SignSpeak
+🔹 UI_expo/           # 📱 React Native mobile app (Expo)
+🔹 server/            # 🧠 Python backend (Flask API)
+🔹 models/            # 🧠 Trained ML models
+🔹 Scripts/           # 🗪 Experimental/Training scripts
+│   🔹 Keypoints/
+│   🔹 YOLO/
+│   └️ train/
+🔹 docs/              # 📄 Documentation (optional)
+🔹 deploy/            # ⚙️ Docker / Nginx configs
+🔹 ASL Alphabet.jpg   # 📸 ASL Alphabet Reference
+└️ requirements.txt   # 🐍 Python dependencies
 ```
 
-## Quick Start
+---
 
-### Development Setup
+## ⚙️ Quick Start
 
-1. Clone the repository:
+### 💪 1. Clone the Repo
+
 ```bash
-git clone https://github.com/your-username/asl-recognition.git
-cd asl-recognition
+git clone https://github.com/your-username/signspeak.git
+cd signspeak
 ```
 
-2. Set up environment:
+---
+
+### 🧠 2. Run the Backend (Flask)
+
 ```bash
-cp .env.example .env  # Configure your environment variables
-make install-dev      # Install Python dependencies
-make install-ui       # Install UI dependencies
+cd server
+python3 -m venv venv
+source venv/bin/activate
+pip install -r ../requirements.txt
+python App.py
 ```
 
-3. Start development servers:
+Backend runs at: `http://localhost:5000`
+
+---
+
+### 📱 3. Run the Mobile App (Expo)
+
 ```bash
-make run-server  # Start backend server
-make run-ui      # Start mobile app development server
+cd UI_expo
+npm install
+npx expo start
 ```
 
-### Production Deployment
+Scan the QR code with Expo Go app to test it live on your phone.
 
-1. Using Docker Compose:
+---
+
+## 🧠 Model Proof
+
+* 🔍 See it in action: [`Model_proof.mp4`](./Model_proof.mp4)
+* 📸 Visuals used: [`ASL Alphabet.jpg`](./ASL%20Alphabet.jpg)
+
+---
+
+## 🔐 Security
+
+* Backend API enforces HTTPS (in production)
+* Input validation + sanitization
+* Rate limiting enabled via middleware
+* CORS handled securely
+
+---
+
+## 🐳 Deployment (Optional)
+
+### Option 1: Docker
+
 ```bash
 docker-compose up -d
 ```
 
-2. Manual Deployment:
-```bash
-# Build the application
-make clean
-pip install -r requirements.txt
-pip install -e .
+### Option 2: Manual Prod Build
 
-# Start the server
+```bash
+pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:5000 server.App:app
 ```
 
-## Configuration
+---
 
-- Environment variables: Copy `.env.example` to `.env` and configure
-- Nginx: Configure `deploy/nginx.conf` for your domain
-- Docker: Adjust `Dockerfile` and `docker-compose.yml` as needed
+## 👀 Monitoring
 
-## Testing
+* Health endpoints (e.g. `/ping`)
+* Logs structured via Flask logging
+* Docker healthcheck configured
 
-```bash
-make test       # Run all tests
-make lint       # Run code quality checks
-make test-live  # Run live recognition tests
-```
+---
 
-## Security
+## 🛠️ Tech Stack
 
-- See `SECURITY.md` for vulnerability reporting
-- All API endpoints are HTTPS-only in production
-- Input validation and sanitization implemented
-- Rate limiting enabled
+| Layer      | Technology                 |
+| ---------- | -------------------------- |
+| Frontend   | React Native (Expo)        |
+| Backend    | Python Flask API           |
+| CV/ML      | MediaPipe, OpenCV, YOLOv5  |
+| Deployment | Docker, Gunicorn, Nginx    |
+| Platform   | Mobile-first (Android/iOS) |
 
-## Performance Optimization
+---
 
-- Docker containers optimized for production
-- Nginx configured for static file serving
-- Model inference optimized for CPU/GPU
-- Caching implemented where appropriate
+## 🙌 Contributing
 
-## Monitoring & Logging
+Pull requests welcome! See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
-- Health check endpoints available
-- Structured logging implemented
-- Docker health checks configured
-- Performance metrics tracking
+---
 
-## Contributing
+## 📖 License
 
-See `CONTRIBUTING.md` for guidelines.
+MIT — free to modify and distribute.
 
-## License
+---
 
-MIT License - see LICENSE file for details.
+## 📢 Contact / Support
 
-## Support
+* Create an [Issue](https://github.com/your-username/signspeak/issues)
+* Use GitHub Discussions for help
+* Email: [yourname@domain.com](mailto:yourname@domain.com)
 
-- Create an issue for bug reports
-- Use discussions for general questions
-- See documentation in `docs/` for guides
+---
+
+> Made with ❤️ by Pratham Patel & Raahil Patel & Tashvi Patel
