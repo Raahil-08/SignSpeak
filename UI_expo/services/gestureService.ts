@@ -2,11 +2,14 @@ import * as FileSystem from 'expo-file-system';
 import { Platform, Alert } from 'react-native';
 
 // Use different URLs for iOS simulator and Android emulator
-const SERVER_URL = Platform.select({
-  ios: 'http://localhost:5001',
-  android: 'http://10.0.2.2:5001', // Special IP for Android emulator to access host machine
-  default: 'http://localhost:5001'
-});
+
+ // Use different URLs based on platform
+ const SERVER_URL = Platform.select({
+   web:     'http://localhost:5050',  // your browser → host machine
+   ios:     'http://localhost:5050',  // iOS Simulator
+   android: 'http://10.0.2.2:5050',    // Android emulator
+   default: 'http://localhost:5050',
+ })!;
 
 // For debugging - log the server URL
 console.log('Using server URL:', SERVER_URL);
