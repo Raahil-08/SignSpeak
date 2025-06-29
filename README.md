@@ -1,120 +1,155 @@
-# ASL (American Sign Language) Recognition Project
+# 🧠 SignSpeak: Real-Time ASL Recognition System
 
-A comprehensive solution for real-time American Sign Language recognition using computer vision and deep learning.
+> A production-ready American Sign Language recognition platform powered by computer vision and deep learning. Built for real-world mobile use. ✨
 
-## Project Structure
+![Banner](./SignSpeak.png)
+
+---
+
+## 🚀 What It Does
+
+SignSpeak is a cross-platform solution that:
+
+* 🕐️ Recognizes ASL signs **in real-time**
+* 📱 Runs on your **mobile phone** (React Native + Expo)
+* 🧠 Leverages deep learning models on the backend (Flask)
+* 🗪 Supports multiple recognition strategies:
+
+  * Keypoint detection (MediaPipe)
+  * CNN-based classification
+  * Object detection (YOLOv5)
+
+> 🎥 [Watch Model Demo Video](./Model_proof.mp4)
+
+---
+
+## 🗂 Project Structure
 
 ```
-├── Scripts/                 # Core ML/AI implementation
-│   ├── Keypoints/          # Keypoint-based recognition
-│   ├── YOLO/               # YOLO-based object detection
-│   └── train/              # Training scripts and utilities
-├── UI_expo/                # Mobile application (Expo/React Native)
-├── docs/                   # Project documentation
-├── models/                 # Trained model weights
-├── server/                 # Backend server implementation
-└── requirements.txt        # Python dependencies
+📆 SignSpeak
+🔹 UI_expo/           # 📱 React Native mobile app (Expo)
+🔹 server/            # 🧠 Python backend (Flask API)
+🔹 models/            # 🧠 Trained ML models
+🔹 Scripts/           # 🗪 Experimental/Training scripts
+│   🔹 Keypoints/
+│   🔹 YOLO/
+│   └️ train/
+🔹 docs/              # 📄 Documentation (optional)
+🔹 deploy/            # ⚙️ Docker / Nginx configs
+🔹 ASL Alphabet.jpg   # 📸 ASL Alphabet Reference
+└️ requirements.txt   # 🐍 Python dependencies
 ```
 
-## Features
+---
 
-- Real-time ASL recognition using computer vision
-- Multiple recognition approaches:
-  - CNN-based classification
-  - Keypoint-based detection
-  - YOLO object detection
-- Cross-platform mobile application
-- RESTful API server
+## ⚙️ Quick Start
 
-## Setup
+### 💪 1. Clone the Repo
 
-1. Install Python dependencies:
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/your-username/signspeak.git
+cd signspeak
 ```
 
-2. Set up the mobile application:
+---
+
+### 🧠 2. Run the Backend (Flask)
+
+```bash
+cd server
+python3 -m venv venv
+source venv/bin/activate
+pip install -r ../requirements.txt
+python App.py
+```
+
+Backend runs at: `http://localhost:5000`
+
+---
+
+### 📱 3. Run the Mobile App (Expo)
+
 ```bash
 cd UI_expo
 npm install
+npx expo start
 ```
 
-3. Start the development server:
+Scan the QR code with Expo Go app to test it live on your phone.
+
+---
+
+## 🧠 Model Proof
+
+* 🔍 See it in action: [`Model_proof.mp4`](./Model_proof.mp4)
+* 📸 Visuals used: [`ASL Alphabet.jpg`](./ASL%20Alphabet.jpg)
+
+---
+
+## 🔐 Security
+
+* Backend API enforces HTTPS (in production)
+* Input validation + sanitization
+* Rate limiting enabled via middleware
+* CORS handled securely
+
+---
+
+## 🐳 Deployment (Optional)
+
+### Option 1: Docker
+
 ```bash
-python app.py
+docker-compose up -d
 ```
 
-4. Launch the mobile app:
+### Option 2: Manual Prod Build
+
 ```bash
-cd UI_expo
-npm start
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 server.App:app
 ```
 
-## Models
+---
 
-- `asl_cnn.pth`: CNN-based ASL recognition model
-- `asl_gnn.pth`: Graph Neural Network for hand pose estimation
+## 👀 Monitoring
 
-## Documentation
+* Health endpoints (e.g. `/ping`)
+* Logs structured via Flask logging
+* Docker healthcheck configured
 
-Detailed documentation is available in the `docs/` directory.
+---
 
-## License
+## 🛠️ Tech Stack
 
-MIT License
+| Layer      | Technology                 |
+| ---------- | -------------------------- |
+| Frontend   | React Native (Expo)        |
+| Backend    | Python Flask API           |
+| CV/ML      | MediaPipe, OpenCV, YOLOv5  |
+| Deployment | Docker, Gunicorn, Nginx    |
+| Platform   | Mobile-first (Android/iOS) |
 
-## Contributing
+---
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+## 🙌 Contributing
 
+Pull requests welcome! See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
- ## Model Testing & Results
+---
 
-To validate SignSpeak’s performance on unseen data, we run a comprehensive evaluation using our `scripts/test_sklearn_model_stats.py` harness. This produces both quantitative metrics and visual diagnostics in the `reports/` folder.
+## 📖 License
 
-### 1. Overall Metrics
+MIT — free to modify and distribute.
 
-| Metric      | Score    |
-|-------------|---------:|
-| **Accuracy**   | 92.3 %   |
-| **Precision**  | 91.8 %   |
-| **Recall**     | 92.3 %   |
-| **F1-Score**   | 92.0 %   |
-| **Avg NLL**    | 0.18     |
-| **Avg Entropy**| 0.56     |
-| **Latency**    | 12.4 ms  |
+---
 
-> **Full details:** see `reports/metrics.csv`
+## 📢 Contact / Support
 
-### 2. Per-Class Breakdown
+* Create an [Issue](https://github.com/your-username/signspeak/issues)
+* Use GitHub Discussions for help
+* Email: [yourname@domain.com](mailto:yourname@domain.com)
 
-Download `reports/per_class_metrics.csv` to inspect precision, recall, and F1 for each sign class. The lowest F1 scores (e.g. **X**, **W**, **I**, **L**) highlight opportunities for targeted data augmentation.
+---
 
-### 3. Confusion Matrix
-
-![Confusion Matrix](reports/confusion_matrix.png)
-
-- **Diagonal** = correct predictions.  
-- **Off-diagonal** entries (e.g. **X→W**, **I→L**) show common misclassifications—these are your model’s weak points.  
-- Rare classes (e.g. **Q** with only 7 test examples) may appear noisier due to limited data.
-
-### 4. Prediction Uncertainty
-
-![Prediction Entropy](reports/entropy_hist.png)
-
-Each sample’s entropy \(H = -\sum p_c \log p_c\) quantifies model confidence:
-
-- **Low entropy (< 0.2 nats):** model is highly confident.  
-- **Higher entropy:** model uncertainty—these “hard” frames are prime candidates for review or re-capture.
-
-### 5. Next Steps
-
-1. **Augment** data for commonly confused pairs (X↔W, I↔L).  
-2. **Enhance preprocessing** to normalize hand scale and orientation.  
-3. **Threshold** on prediction entropy to prompt users when the model is uncertain.
-
-This evaluation pipeline ensures transparent, reproducible testing and guides our ongoing efforts to refine SignSpeak’s accuracy and robustness.
+> Made with ❤️ by Pratham Patel & Raahil Patel & Tashvi Patel

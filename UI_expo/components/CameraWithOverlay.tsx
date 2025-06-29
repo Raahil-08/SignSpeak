@@ -18,7 +18,7 @@ import Animated, {
 import { startRecording, stopRecording, processFrame } from '@/services/gestureService';
 
 interface CameraWithOverlayProps {
-  onTextRecognized: (text: string) => void;
+  onTextRecognized: (text: string | null) => void;
   isProcessing: boolean;
   isRecording: boolean;
   onRecordingChange: (recording: boolean) => void;
@@ -27,11 +27,11 @@ interface CameraWithOverlayProps {
 // Frame capture interval in milliseconds
 const FRAME_CAPTURE_INTERVAL = 500; // 2 frames per second
 
-export default function CameraWithOverlay({ 
-  onTextRecognized, 
+export default function CameraWithOverlay({
+  onTextRecognized,
   isProcessing,
   isRecording,
-  onRecordingChange
+  onRecordingChange,
 }: CameraWithOverlayProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front');
@@ -126,7 +126,7 @@ export default function CameraWithOverlay({
       frameTimerRef.current = setInterval(captureFrame, FRAME_CAPTURE_INTERVAL);
       
       // Notify the user that recording has started
-      onTextRecognized("Recording started. Sign language will be processed later.");
+
     } catch (error) {
       console.error('Failed to start recording:', error);
       setCaptureError('Failed to start recording');
@@ -148,7 +148,7 @@ export default function CameraWithOverlay({
       console.log('Recording stopped:', result);
       
       // Notify the user that recording has stopped
-      onTextRecognized(`Recording stopped. ${result.frame_count} frames captured.`);
+
     } catch (error) {
       console.error('Failed to stop recording:', error);
       // Even if stopping fails, we still want to clear the local recording state
@@ -156,25 +156,61 @@ export default function CameraWithOverlay({
   };
   
   // Capture a frame and send it to the server
-  const captureFrame = async () => {
-    if (!cameraRef.current || !isRecording) return;
-    
-    try {
-      // Take a picture
-      const photo = await cameraRef.current.takePictureAsync({ 
-        quality: 0.5, // Lower quality to reduce data size
-        base64: true,
-        exif: false,
-        skipProcessing: true
-      });
-      
-      // Send the frame to the server
-      await processFrame(photo.base64);
-    } catch (error) {
-      console.error('Error capturing frame:', error);
-      setCaptureError('Error capturing frames');
-    }
-  };
+//   const captureFrame = async () => {
+//   if (!cameraRef.current || !isRecording) return;
+  
+
+//   try {
+//     const photo = await cameraRef.current.takePictureAsync({
+//       quality: 0.5,
+//       base64: true,
+//       exif: false,
+//       skipProcessing: true,
+//     });
+
+//     // ⬇️  Call Flask and get its JSON
+//     const result = await processFrame(photo.base64);
+//     // props.onTextRecognized(result?.letter ?? null);   // must call every frame
+
+// console.log('server result →', result);   // ⬅️  TEMP-log
+// onTextRecognized(result?.letter ?? null);
+//     // // ⬇️  Push the letter to the UI
+//     // if (result?.letter) {
+//     //   onTextRecognized(result.letter);   // <= THIS triggers AnimatedTranslation
+//     // }
+
+//     onTextRecognized(result?.letter ?? null);
+//   } catch (err) {
+//     console.error('captureFrame error:', err);
+//     setCaptureError('Error capturing frames');
+//   }
+// };
+
+const captureFrame = async () => {
+  if (!cameraRef.current || !isRecording) return;
+
+  try {
+    // 1️⃣ grab a still
+    const photo = await cameraRef.current.takePictureAsync({
+      quality:        0.5,
+      base64:         true,
+      exif:           false,
+      skipProcessing: true,
+    });
+
+    // 2️⃣ send to Flask → { letter: 'A' | null }
+    const result = await processFrame(photo.base64);
+    console.log('server result →', result);        // debug
+
+    // 3️⃣ forward only clean single-char A–Z letters
+    const l     = result?.letter;
+    const isAZ  = typeof l === 'string' && l.length === 1 && /^[A-Z]$/.test(l);
+    onTextRecognized(isAZ ? l : null);
+  } catch (err) {
+    console.error('captureFrame error:', err);
+    setCaptureError('Error capturing frames');
+  }
+};
 
   if (!permission) {
     return (
@@ -220,84 +256,93 @@ export default function CameraWithOverlay({
     
     onRecordingChange(!isRecording);
   };
+  
 
-  return (
-    <View style={styles.container}>
-      <CameraView 
-        style={styles.camera} 
-        facing={facing}
-        ref={cameraRef}
-      >
-        <View style={styles.overlay}>
-          <View style={[styles.header, { justifyContent: 'center' }]}>
-            <ThemedText 
-              variant="h3" 
-              style={[styles.title, { color: '#f4f3ee', textAlign: 'center', width: '100%' }]}
-            >
-              Sign Language Translator
+return (
+  <View style={styles.container}>
+    {/* ── camera fills the whole container ── */}
+    <CameraView
+      style={StyleSheet.absoluteFill}  // full-bleed camera
+      facing={facing}
+      ref={cameraRef}
+    />
+
+    {/* ── overlay UI sits above the camera ── */}
+    <View style={styles.overlay}>
+      {/* ---------- header ---------- */}
+      <View style={[styles.header, { justifyContent: 'center' }]}>
+        <ThemedText
+          variant="h3"
+          style={[styles.title, { color: '#f4f3ee', textAlign: 'center', width: '100%' }]}
+        >
+          Sign Language Translator
+        </ThemedText>
+
+        {isRecording && (
+          <View style={[styles.recordingIndicator, { backgroundColor: '#463f3a' }]}>
+            <Animated.View style={[styles.recordingDot, animatedRecordingStyle]} />
+            <ThemedText style={[styles.recordingText, { color: '#f4f3ee' }]}>
+              Recording
             </ThemedText>
-            {isRecording && (
-              <View style={[styles.recordingIndicator, { backgroundColor: '#463f3a' }]}>
-                <Animated.View style={[styles.recordingDot, animatedRecordingStyle]} />
-                <ThemedText style={[styles.recordingText, { color: '#f4f3ee' }]}>
-                  Recording
-                </ThemedText>
-              </View>
-            )}
-            
-            {/* Timer display */}
-            <View style={[styles.timerContainer, { opacity: isRecording ? 1 : 0 }]}>
-              <ThemedText style={[styles.timerText, { color: '#f4f3ee' }]}>
-                {formatTime(elapsedTime)}
-              </ThemedText>
-            </View>
-            
-            {captureError && (
-              <View style={[styles.errorIndicator, { backgroundColor: '#e76f51' }]}>
-                <ThemedText style={[styles.errorText, { color: '#fff' }]}>
-                  {captureError}
-                </ThemedText>
-              </View>
-            )}
           </View>
+        )}
 
-          <View style={styles.controls}>
-            <Pressable
-              style={[styles.controlButton, { backgroundColor: '#bcb8b1' }]}
-              onPress={toggleAudio}
-            >
-              {audioEnabled ? 
-                <Megaphone size={24} color="#463f3a" /> : 
-                <MegaphoneOff size={24} color="#463f3a" />
-              }
-            </Pressable>
-            
-            <Pressable
-              style={[
-                styles.recordButton,
-                { borderColor: '#e0afa0' },
-                isRecording && { backgroundColor: 'rgba(224, 175, 160, 0.2)' }
-              ]}
-              onPress={toggleRecording}
-            >
-              <Circle
-                size={24}
-                color={isRecording ? '#e0afa0' : '#f4f3ee'}
-                fill={isRecording ? '#e0afa0' : 'transparent'}
-              />
-            </Pressable>
-            
-            <Pressable
-              style={[styles.controlButton, { backgroundColor: '#bcb8b1' }]}
-              onPress={toggleCameraFacing}
-            >
-              <SwitchCamera size={24} color="#463f3a" />
-            </Pressable>
-          </View>
+        {/* Timer */}
+        <View style={[styles.timerContainer, { opacity: isRecording ? 1 : 0 }]}>
+          <ThemedText style={[styles.timerText, { color: '#f4f3ee' }]}>
+            {formatTime(elapsedTime)}
+          </ThemedText>
         </View>
-      </CameraView>
+
+        {/* Capture error */}
+        {captureError && (
+          <View style={[styles.errorIndicator, { backgroundColor: '#e76f51' }]}>
+            <ThemedText style={[styles.errorText, { color: '#fff' }]}>
+              {captureError}
+            </ThemedText>
+          </View>
+        )}
+      </View>
+
+      {/* ---------- controls ---------- */}
+      <View style={styles.controls}>
+        <Pressable
+          style={[styles.controlButton, { backgroundColor: '#bcb8b1' }]}
+          onPress={toggleAudio}
+        >
+          {audioEnabled ? (
+            <Megaphone size={24} color="#463f3a" />
+          ) : (
+            <MegaphoneOff size={24} color="#463f3a" />
+          )}
+        </Pressable>
+
+        <Pressable
+          style={[
+            styles.recordButton,
+            { borderColor: '#e0afa0' },
+            isRecording && { backgroundColor: 'rgba(224, 175, 160, 0.2)' },
+          ]}
+          onPress={toggleRecording}
+        >
+          <Circle
+            size={24}
+            color={isRecording ? '#e0afa0' : '#f4f3ee'}
+            fill={isRecording ? '#e0afa0' : 'transparent'}
+          />
+        </Pressable>
+
+        <Pressable
+          style={[styles.controlButton, { backgroundColor: '#bcb8b1' }]}
+          onPress={toggleCameraFacing}
+        >
+          <SwitchCamera size={24} color="#463f3a" />
+        </Pressable>
+      </View>
     </View>
-  );
+  </View>
+);
+
 }
 
 const styles = StyleSheet.create({
