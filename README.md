@@ -1,155 +1,200 @@
 # 🧠 SignSpeak: Real-Time ASL Recognition System
 
-> A production-ready American Sign Language recognition platform powered by computer vision and deep learning. Built for real-world mobile use. ✨
-
 ![Banner](./SignSpeak.png)
+
+[![Release](https://img.shields.io/github/v/release/CodeWithInferno/SignSpeak)](https://github.com/CodeWithInferno/SignSpeak/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ---
 
-## 🚀 What It Does
+## 🚀 Overview
 
-SignSpeak is a cross-platform solution that:
+SignSpeak is a cross-platform American Sign Language (ASL) recognition platform that:
 
-* 🕐️ Recognizes ASL signs **in real-time**
-* 📱 Runs on your **mobile phone** (React Native + Expo)
-* 🧠 Leverages deep learning models on the backend (Flask)
-* 🗪 Supports multiple recognition strategies:
+* 🕒 **Detects ASL signs in real-time** via your device camera
+* 📱 **Runs on mobile devices** (iOS & Android) using React Native + Expo
+* 🤖 **Processes frames** on a Python Flask backend with MediaPipe, OpenCV, and trained ML models
+* 🏗️ **Dockerized** for one‑command deployment (development or production)
 
-  * Keypoint detection (MediaPipe)
-  * CNN-based classification
-  * Object detection (YOLOv5)
+> 🎥 **Model Demo**: [Watch proof video](./Model_proof.mp4)
 
-> 🎥 [Watch Model Demo Video](./Model_proof.mp4)
+---
+
+## 📋 Table of Contents
+
+- [🧠 SignSpeak: Real-Time ASL Recognition System](#-signspeak-real-time-asl-recognition-system)
+  - [🚀 Overview](#-overview)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [🔥 Features](#-features)
+  - [🗂 Project Structure](#-project-structure)
+  - [⚙️ Getting Started](#️-getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Local Development](#local-development)
+    - [🐳 Docker Deployment](#-docker-deployment)
+  - [🖼️ Assets](#️-assets)
+  - [🛠️ Tech Stack](#️-tech-stack)
+  - [🤝 Contributing](#-contributing)
+  - [📖 License](#-license)
+  - [📞 Contact](#-contact)
+
+---
+
+## 🔥 Features
+
+* **Real-Time Recognition**: 30+ frames per second hand detection with MediaPipe
+* **Multiple Strategies**:
+
+  * Keypoint-based classification
+  * CNN-powered image classification
+  * Optional YOLOv5 object detection pipeline
+* **Session Recording**: Start/stop sessions, save raw frames, export metadata
+* **Cross-Platform UI**: Shared codebase for iOS, Android, and Web via Expo
+* **Scalable Backend**: Containerized Flask API, ready for production with Gunicorn + Nginx
 
 ---
 
 ## 🗂 Project Structure
 
 ```
-📆 SignSpeak
-🔹 UI_expo/           # 📱 React Native mobile app (Expo)
-🔹 server/            # 🧠 Python backend (Flask API)
-🔹 models/            # 🧠 Trained ML models
-🔹 Scripts/           # 🗪 Experimental/Training scripts
-│   🔹 Keypoints/
-│   🔹 YOLO/
-│   └️ train/
-🔹 docs/              # 📄 Documentation (optional)
-🔹 deploy/            # ⚙️ Docker / Nginx configs
-🔹 ASL Alphabet.jpg   # 📸 ASL Alphabet Reference
-└️ requirements.txt   # 🐍 Python dependencies
+SignSpeak/
+├── UI_expo/           # React Native (Expo) mobile app
+│   ├── components/    # UI & camera overlay
+│   ├── services/      # API wrappers & data handling
+│   └── app.json       # Expo config
+├── server/            # Flask backend API
+│   ├── App.py         # Main application
+│   ├── recordings/    # Stored session data
+│   └── requirements.txt
+├── models/            # Pretrained ML models & label files
+│   ├── random_forest_model.pkl
+│   └── label_classes.txt
+├── deploy/            # Docker & Nginx configs
+│   └── docker-compose.yml
+├── assets/
+│   ├── SignSpeak.png       # README banner
+│   ├── ASL Alphabet.jpg    # ASL chart reference
+│   └── Model_proof.mp4     # Demo video
+├── docs/              # (Optional) Extended documentation
+├── Scripts/           # Training & preprocessing scripts
+└── README.md          # This file
 ```
 
 ---
 
-## ⚙️ Quick Start
+## ⚙️ Getting Started
 
-### 💪 1. Clone the Repo
+### Prerequisites
 
-```bash
-git clone https://github.com/your-username/signspeak.git
-cd signspeak
-```
+* [Node.js & npm](https://nodejs.org/) (v14+)
+* [Python 3.8+](https://www.python.org/)
+* [Docker & Docker Compose](https://docs.docker.com/)
 
----
+### Local Development
 
-### 🧠 2. Run the Backend (Flask)
+1. **Clone the repository**
 
-```bash
-cd server
-python3 -m venv venv
-source venv/bin/activate
-pip install -r ../requirements.txt
-python App.py
-```
+   ```bash
+   git clone https://github.com/CodeWithInferno/SignSpeak.git
+   cd SignSpeak
+   ```
 
-Backend runs at: `http://localhost:5000`
+2. **Backend**
 
----
+   ```bash
+   cd server
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   python App.py
+   ```
 
-### 📱 3. Run the Mobile App (Expo)
+   The API will run at: `http://localhost:5050`
 
-```bash
-cd UI_expo
-npm install
-npx expo start
-```
+3. **Mobile App**
 
-Scan the QR code with Expo Go app to test it live on your phone.
+   ```bash
+   cd UI_expo
+   npm install
+   npx expo start
+   ```
 
----
-
-## 🧠 Model Proof
-
-* 🔍 See it in action: [`Model_proof.mp4`](./Model_proof.mp4)
-* 📸 Visuals used: [`ASL Alphabet.jpg`](./ASL%20Alphabet.jpg)
+   * Open the Expo Go app on your phone and scan the QR code, or launch on an emulator.
 
 ---
 
-## 🔐 Security
+### 🐳 Docker Deployment
 
-* Backend API enforces HTTPS (in production)
-* Input validation + sanitization
-* Rate limiting enabled via middleware
-* CORS handled securely
+1. **Start with Docker Compose**
 
----
+   ```bash
+   docker-compose up --build -d
+   ```
+2. **Verify services**
 
-## 🐳 Deployment (Optional)
-
-### Option 1: Docker
-
-```bash
-docker-compose up -d
-```
-
-### Option 2: Manual Prod Build
-
-```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 server.App:app
-```
+   ```bash
+   docker-compose ps
+   ```
+3. **Access UI** on your LAN at `http://<your-host-ip>:19006`
 
 ---
 
-## 👀 Monitoring
+## 🖼️ Assets
 
-* Health endpoints (e.g. `/ping`)
-* Logs structured via Flask logging
-* Docker healthcheck configured
+* **Banner**: `./SignSpeak.png`
+
+* **ASL Alphabet Chart**:
+
+  ![ASL Alphabet](./ASL%20Alphabet.jpg)
+
+* **Model Proof Video**:
+
+  <video width="400" controls>
+    <source src="./Model_proof.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer      | Technology                 |
-| ---------- | -------------------------- |
-| Frontend   | React Native (Expo)        |
-| Backend    | Python Flask API           |
-| CV/ML      | MediaPipe, OpenCV, YOLOv5  |
-| Deployment | Docker, Gunicorn, Nginx    |
-| Platform   | Mobile-first (Android/iOS) |
+| Layer      | Technology                                         |
+| ---------- | -------------------------------------------------- |
+| Frontend   | React Native (Expo)                                |
+| Backend    | Python, Flask, Flask-CORS                          |
+| CV/ML      | MediaPipe Hands, OpenCV, scikit-learn (RF), YOLOv5 |
+| Deployment | Docker, Docker Compose, Gunicorn                   |
+| Platform   | Android, iOS & Web (Progressive)                   |
 
 ---
 
-## 🙌 Contributing
+## 🤝 Contributing
 
-Pull requests welcome! See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+Contributions are welcome! Please:
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/YourFeature`)
+3. Commit your changes (`git commit -m "Add YourFeature"`)
+4. Push (`git push origin feature/YourFeature`)
+5. Open a Pull Request
+
+For major changes, open an issue first to discuss what you’d like to change.
 
 ---
 
 ## 📖 License
 
-MIT — free to modify and distribute.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 
-## 📢 Contact / Support
+## 📞 Contact
 
-* Create an [Issue](https://github.com/your-username/signspeak/issues)
-* Use GitHub Discussions for help
-* Email: [yourname@domain.com](mailto:yourname@domain.com)
+* GitHub Issues: [codewithinferno/signspeak](https://github.com/CodeWithInferno/SignSpeak/issues)
+* Discussions: [GitHub Discussions](https://github.com/CodeWithInferno/SignSpeak/discussions)
+* Email: [praathambiren2618@gmail.com](mailto:prathambiren2618@gmail.com)
 
 ---
 
-> Made with ❤️ by Pratham Patel & Raahil Desai & Tashvi Patel
+
+> Made with ❤️ by Pratham Patel, Raahil Patel & Tashvi Patel
+

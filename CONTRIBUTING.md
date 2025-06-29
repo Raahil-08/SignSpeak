@@ -7,8 +7,8 @@ Thank you for your interest in contributing to the ASL Recognition project! This
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/your-username/asl-recognition.git
-   cd asl-recognition
+   git clone https://github.com/codewithinferno/signspeak.git
+   cd Hackathon
    ```
 3. Set up development environment:
    ```bash
