@@ -1,26 +1,33 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Translation } from '@/components/TranslationHistory';
 
+/* ──────────────────── TYPES ──────────────────── */
+
 interface TranslationContextType {
   translations: Translation[];
   addTranslation: (text: string) => void;
   clearHistory: () => void;
-  currentTranslation: string | null;
-  setCurrentTranslation: (text: string | null) => void;
+  currentTranslation: string;            // 🔄 now always a string
+  setCurrentTranslation: (text: string) => void;
 }
+
+/* ──────────────────── CONTEXT ──────────────────── */
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
+/* ──────────────────── PROVIDER ──────────────────── */
+
 export function TranslationProvider({ children }: { children: React.ReactNode }) {
   const [translations, setTranslations] = useState<Translation[]>([]);
-  const [currentTranslation, setCurrentTranslation] = useState<string | null>(null);
+  const [currentTranslation, setCurrentTranslation] = useState<string>('');   // 🔄 empty string, not null
 
-  // Load translations from storage (would use AsyncStorage in a real app)
+  /* ─ Load any saved history (e.g. AsyncStorage) ─ */
   useEffect(() => {
-    // Simulate loading saved translations
-    const loadedTranslations: Translation[] = [];
-    setTranslations(loadedTranslations);
+    // TODO: replace with AsyncStorage retrieval if/when you persist
+    setTranslations([]);    // placeholder – no saved data yet
   }, []);
+
+  /* ──────────────── ACTIONS ──────────────── */
 
   const addTranslation = (text: string) => {
     const newTranslation: Translation = {
@@ -28,18 +35,18 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       text,
       timestamp: new Date(),
     };
-    
     setTranslations(prev => [newTranslation, ...prev]);
-    
-    // In a real app, would save to AsyncStorage here
+    // TODO: persist to AsyncStorage if needed
   };
 
   const clearHistory = () => {
     setTranslations([]);
-    // In a real app, would clear AsyncStorage here
+    // TODO: also clear AsyncStorage if used
   };
 
-  const value = {
+  /* ──────────────── VALUE ──────────────── */
+
+  const value: TranslationContextType = {
     translations,
     addTranslation,
     clearHistory,
@@ -47,12 +54,18 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     setCurrentTranslation,
   };
 
-  return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
+  return (
+    <TranslationContext.Provider value={value}>
+      {children}
+    </TranslationContext.Provider>
+  );
 }
+
+/* ──────────────────── HOOK ──────────────────── */
 
 export const useTranslation = () => {
   const context = useContext(TranslationContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useTranslation must be used within a TranslationProvider');
   }
   return context;
