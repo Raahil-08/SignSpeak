@@ -152,4 +152,4 @@ MIT — free to modify and distribute.
 
 ---
 
-> Made with ❤️ by Pratham Patel & Raahil Patel & Tashvi Patel
+> Made with ❤️ by Pratham Patel & Raahil Desai & Tashvi Patel
