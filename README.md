@@ -191,10 +191,10 @@ This project is licensed under the MIT License. See [LICENSE](./LICENSE) for det
 
 * GitHub Issues: [codewithinferno/signspeak](https://github.com/CodeWithInferno/SignSpeak/issues)
 * Discussions: [GitHub Discussions](https://github.com/CodeWithInferno/SignSpeak/discussions)
-* Email: [praathambiren2618@gmail.com](mailto:prathambiren2618@gmail.com)
+* Email: [raahildesai8@gmail.com](mailto:raahildesai8@gmail.com)
 
 ---
 
 
-> Made with ❤️ by Pratham Patel, Raahil Desai & Tashvi Patel
+> Made with ❤️ by Raahil Desai, Pratham Patel & Tashvi Patel
 
