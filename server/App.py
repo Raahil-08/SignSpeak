@@ -29,8 +29,9 @@ RECORDINGS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
 # ---------- load model + labels --------------------------------------
-MODEL = joblib.load('random_forest_model.pkl')
-with open('label_classes.txt') as f:
+SERVER_DIR = os.path.abspath(os.path.dirname(__file__))
+MODEL = joblib.load(os.path.join(SERVER_DIR, 'random_forest_model.pkl'))
+with open(os.path.join(SERVER_DIR, 'label_classes.txt')) as f:
     LABELS = [ln.strip() for ln in f]
 
 # ---------- runtime state --------------------------------------------
