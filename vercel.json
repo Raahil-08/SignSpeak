@@ -7,7 +7,6 @@
       "memory": 512
     }
   },
-  "ignoreCommand": "git check-ignore -q $FILE || exit 0",
   "env": {
     "PYTHONUNBUFFERED": "1"
   }
