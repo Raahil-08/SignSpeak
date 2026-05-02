@@ -1,0 +1,62 @@
+# Vercel build exclusions
+
+# Exclude directories and files not needed for production
+
+# Training and model files
+
+Scripts/
+runs/
+reports/
+models/_.pth
+models/_.h5
+models/\*.keras
+yolov8n.pt
+
+# Development and testing
+
+test_server.py
+Test_Dockerfile
+auto_label.py
+Download_Dataset.py
+\*.ipynb
+
+# Documentation and configs
+
+docs/
+.github/
+CONTRIBUTING.md
+SECURITY.md
+
+# Media files
+
+_.mov
+_.mp4
+\*.jpg
+
+# NLP modules (if not used in server)
+
+# sign_nlp/
+
+# UI/Frontend (if deploying backend separately)
+
+UI_expo/
+
+# Build and cache directories
+
+.git/
+**pycache**/
+\*.pyc
+.pytest_cache/
+.venv/
+node_modules/
+
+# Environment files
+
+.env.example
+
+# CI/CD
+
+Makefile
+docker-compose.yml
+Dockerfile
+Test_Dockerfile
