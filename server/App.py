@@ -8,9 +8,19 @@ import mediapipe as mp
 import joblib
 
 # ---------- YOUR OWN helper -----------------
-from preprocess_keypoints import preprocess_keypoints
-from blur_detection import is_blurry            # keep if you need blur tagging
 
+# ---------- YOUR OWN helper (optional) --------
+try:
+    from preprocess_keypoints import preprocess_keypoints
+except ImportError as e:
+    print(f"Warning: Could not import preprocess_keypoints: {e}", flush=True)
+    preprocess_keypoints = None
+
+try:
+    from blur_detection import is_blurry
+except ImportError as e:
+    print(f"Warning: Could not import blur_detection: {e}", flush=True)
+    is_blurry = None
 # ---------------------------------------------------------------------
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -28,11 +38,51 @@ RECORDINGS_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                               'recordings')
 os.makedirs(RECORDINGS_DIR, exist_ok=True)
 
-# ---------- load model + labels --------------------------------------
+# ---------- load model + labels (lazy loaded to avoid build failures)-----
 SERVER_DIR = os.path.abspath(os.path.dirname(__file__))
-MODEL = joblib.load(os.path.join(SERVER_DIR, 'random_forest_model.pkl'))
-with open(os.path.join(SERVER_DIR, 'label_classes.txt')) as f:
-    LABELS = [ln.strip() for ln in f]
+_model_cache = None
+_labels_cache = None
+
+def get_model():
+    """Lazy load model - only when first needed"""
+    global _model_cache
+    if _model_cache is None:
+        model_path = os.path.join(SERVER_DIR, 'random_forest_model.pkl')
+        if os.path.exists(model_path):
+            _model_cache = joblib.load(model_path)
+        else:
+            raise FileNotFoundError(f"Model file not found: {model_path}")
+    return _model_cache
+
+def get_labels():
+    """Lazy load labels - only when first needed"""
+    global _labels_cache
+    if _labels_cache is None:
+        labels_path = os.path.join(SERVER_DIR, 'label_classes.txt')
+        if os.path.exists(labels_path):
+            with open(labels_path) as f:
+                _labels_cache = [ln.strip() for ln in f]
+        else:
+            raise FileNotFoundError(f"Labels file not found: {labels_path}")
+    return _labels_cache
+
+# Cache holders for lazy loading
+MODEL = None
+LABELS = None
+
+def _ensure_model_loaded():
+    """Ensure model is loaded before use"""
+    global MODEL
+    if MODEL is None:
+        MODEL = get_model()
+    return MODEL
+
+def _ensure_labels_loaded():
+    """Ensure labels are loaded before use"""
+    global LABELS
+    if LABELS is None:
+        LABELS = get_labels()
+    return LABELS
 
 # ---------- runtime state --------------------------------------------
 active_recordings = {}
@@ -58,6 +108,15 @@ def extract_keypoints(frame):
 # =====================================================================
 #                           ROUTES
 # =====================================================================
+
+@app.get('/')
+@app.get('/health')
+def health_check():
+    """Health check endpoint - confirms app is running"""
+    return jsonify({
+        'status': 'healthy',
+        'message': 'SignSpeak server is running',
+    })
 
 @app.post('/start-recording')
 def start_recording():
@@ -100,7 +159,7 @@ def process_frame():
         return jsonify({'error': f'Bad image: {e}'}), 400
 
     # ------------ (optional) save frame ------------------------------
-    blur_flag = is_blurry(frame, threshold=100.0)
+    blur_flag = is_blurry(frame, threshold=100.0) if is_blurry else False
     save_dir = os.path.join(session['directory'], 'blurry' if blur_flag else '')
     os.makedirs(save_dir, exist_ok=True)
     cv2.imwrite(os.path.join(save_dir, f'frame_{frame_no:06d}.jpg'), frame)
@@ -109,9 +168,11 @@ def process_frame():
     letter = None
     kp = extract_keypoints(frame)
     if kp is not None:
+        if preprocess_keypoints is None:
+            return jsonify({'error': 'preprocess_keypoints function not available'}), 500
         proc = preprocess_keypoints(kp)[0].reshape(1, -1)  # (1,63)
-        idx = int(MODEL.predict(proc)[0])
-        letter = LABELS[idx]
+           idx = int(_ensure_model_loaded().predict(proc)[0])
+           letter = _ensure_labels_loaded()[idx]
 
     session['frame_count'] += 1
 

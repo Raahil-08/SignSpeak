@@ -12,3 +12,7 @@ from App import app
 
 # Export app for Vercel
 __all__ = ['app']
+
+# Log that the app has been successfully imported
+if __name__ != '__main__':
+	print("[app.py] Flask app successfully imported and ready for Vercel", flush=True)
